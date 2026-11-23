@@ -1,0 +1,26 @@
+# Secrets
+.env
+*.env
+!.env.example
+credentials.json
+
+# Real patient data must never be committed. Synthetic samples are generated
+# by sample_data/generate_sample.py instead.
+discharge_summaries/
+*.discharge_summaries.json
+sample_data/*.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Node
+node_modules/
+dist/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
