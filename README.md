@@ -1,121 +1,71 @@
-# Post-Discharge Patient Tracking & Appointment Scheduling
+# Discharge Summary Extraction Pipeline
 
-A system for Sri Ramakrishna Hospital that turns discharge summary PDFs into
-tracked patient records with scheduled follow-up appointments, so that patients
-discharged from inpatient care are not lost between discharge and review.
+Turns hospital discharge summary PDFs into structured patient records with
+scheduled follow-up dates, ready for a tracking system to consume.
 
-Discharge summaries were produced as PDFs and follow-ups were tracked manually,
-which meant a missed follow-up was invisible until the patient returned — often
-late. This system reads the summaries the hospital already produces, extracts
-the patient and admission details, derives the follow-up date, and loads the
-records into a database that a web application then surfaces to admin staff.
-
----
-
-## My contribution
-
-This was a team project. **I was responsible for the requirements and solution
-design, and for the extraction pipeline.** The pipeline is in this repository;
-the design documents are not — see below.
-
-| Area | Owner |
-|---|---|
-| Requirements, system architecture, module workflows | **me** |
-| Discharge-summary extraction pipeline (`pipeline/extract.py`) | **me** |
-| MongoDB schema design for the extracted records | **me** |
-| MERN web application (Express API, React admin dashboard) | [Akkhilesh R P](https://github.com/akkhileshrp) |
-
-The application implementation lives in Akkhilesh's repository:
-[`akkhileshrp/sriramakrishnahospital`](https://github.com/akkhileshrp/sriramakrishnahospital).
-This repository holds my own contribution and the design artefacts behind it.
+Discharge summaries are produced as PDFs and follow-ups tracked by hand, which
+makes a missed appointment invisible until the patient returns. This pipeline
+reads the summaries a hospital already produces, extracts the patient and
+admission details, derives the follow-up date, and loads the records into
+MongoDB.
 
 ---
 
-## The extraction pipeline
+## What it extracts
 
-The hospital's discharge summaries are text-layer PDFs in a fixed report
-layout. `pipeline/extract.py` reads them with PyMuPDF and parses thirteen
-fields out of the report body:
+Thirteen fields per summary:
 
 ```
-patient_id   ip_no       patient_name   gender_age   mobile_no
-ward         bed         admission_date discharge_date
-patient_address          reason_for_admission        doctor_name
+patient_id   ip_no        patient_name    gender_age   mobile_no
+ward         bed          admission_date  discharge_date
+patient_address           reason_for_admission         doctor_name
 followup_date  (derived)
 ```
 
 Three details that mattered in practice:
 
-- **The layout is positional, not labelled.** `WARD` and `BED` share a single
-  line, and `PATIENT NAME` runs until the next all-caps field label — so the
-  patterns use lookaheads against the *following* label rather than fixed
-  offsets. A summary that wraps a long address onto two lines still parses.
-- **Follow-up is derived, not recorded.** The summaries carry a discharge date
-  but no follow-up date; the hospital's rule is a review fourteen days after
-  discharge. The pipeline computes it (`FOLLOWUP_DAYS`, configurable) rather
-  than requiring staff to enter it.
-- **The load is idempotent.** Records upsert on `patient_id`, so re-running the
-  pipeline over a directory that has already been ingested updates the existing
-  records instead of duplicating patients.
+- **The layout is positional, not labelled.** `WARD` and `BED` share a line, and
+  `PATIENT NAME` runs until the next all-caps label. Patterns use lookaheads
+  against the *following* label rather than fixed offsets, so a summary that
+  wraps a long address across two lines still parses.
+- **Follow-up dates are derived.** Summaries carry a discharge date but no
+  follow-up date; the review falls a fixed interval afterwards, which the
+  pipeline computes rather than asking staff to enter.
+- **Loads are idempotent.** Records upsert on `patient_id`, so re-running over
+  an already-ingested directory updates rather than duplicates.
 
-A summary with no recoverable `patient_id` is skipped and reported rather than
+A summary with no recoverable `patient_id` is skipped and reported, never
 inserted as a partial record.
 
 ---
 
-## Running it
+## Usage
 
 ```bash
 cd pipeline
 pip install -r requirements.txt
 
-cp ../.env.example ../.env     # then set MONGO_URI and DISCHARGE_PDF_DIR
+cp ../.env.example ../.env     # set MONGO_URI and DISCHARGE_PDF_DIR
 python extract.py
 ```
 
-Configuration is read from the environment — connection string, database and
-collection names, input directory, and the follow-up interval. Nothing is
-hardcoded.
+Connection string, database and collection names, input directory and the
+follow-up interval all come from the environment.
 
-### Sample data
+## Sample data
 
-**The real discharge summaries are not in this repository and will not be.**
-They contain identifiable patient information — names, mobile numbers, home
-addresses and admission diagnoses — belonging to real patients of a real
-hospital. Publishing them would be a privacy breach regardless of the project
-being complete.
-
-`sample_data/generate_sample.py` instead generates synthetic summaries that
-reproduce the report layout exactly, so the pipeline can be run and verified
-by anyone:
+Real discharge summaries contain identifiable patient information and are not
+distributable. `sample_data/generate_sample.py` generates synthetic summaries
+in the same layout, so the pipeline can be run and verified by anyone:
 
 ```bash
 python sample_data/generate_sample.py   # writes 3 synthetic PDFs
 python pipeline/extract.py              # ingests them
 ```
 
-Verified against the generated samples: all thirteen fields extract from all
-three records, with follow-up dates correctly derived.
-
----
-
-## Design artefacts
-
-The requirements, architecture, module workflows and functional specification
-I produced are **deliverables for a real hospital** and are not published here.
-What they covered:
-
-- Problem statement, scope and stakeholder analysis
-- Component architecture and data flow between the pipeline, database and app
-- Per-module workflows for discharge capture, follow-up scheduling and the
-  admin review queue
-- Functional specification for the tracking and appointment modules
-
-Available on request.
-
----
+All thirteen fields extract from all three generated records, with follow-up
+dates correctly derived.
 
 ## Stack
 
-**Pipeline** — Python, PyMuPDF, MongoDB (PyMongo)
-**Application** (Akkhilesh) — Express, Mongoose, React, Vite, Tailwind, JWT auth
+Python · PyMuPDF · MongoDB (PyMongo)
