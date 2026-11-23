@@ -15,8 +15,8 @@ records into a database that a web application then surfaces to admin staff.
 ## My contribution
 
 This was a team project. **I was responsible for the requirements and solution
-design, and for the extraction pipeline** — the work in `design/` and
-`pipeline/` in this repository.
+design, and for the extraction pipeline.** The pipeline is in this repository;
+the design documents are not — see below.
 
 | Area | Owner |
 |---|---|
@@ -101,14 +101,17 @@ three records, with follow-up dates correctly derived.
 
 ## Design artefacts
 
-| File | What it covers |
-|---|---|
-| `design/project-initiation-document.pdf` | Problem statement, scope, stakeholders |
-| `design/system-architecture.docx` | Component architecture and data flow |
-| `design/module-workflows.docx` | Per-module workflows |
-| `design/system-specification.docx` | Functional specification |
-| `design/modules-overview.pdf` | Consolidated module overview |
-| `design/presentation.pptx` | Project presentation |
+The requirements, architecture, module workflows and functional specification
+I produced are **deliverables for a real hospital** and are not published here.
+What they covered:
+
+- Problem statement, scope and stakeholder analysis
+- Component architecture and data flow between the pipeline, database and app
+- Per-module workflows for discharge capture, follow-up scheduling and the
+  admin review queue
+- Functional specification for the tracking and appointment modules
+
+Available on request.
 
 ---
 

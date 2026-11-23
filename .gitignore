@@ -24,3 +24,13 @@ dist/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Coursework reports, presentations, certificates and client deliverables.
+# Kept out deliberately: academic-integrity, third-party and client-
+# confidentiality reasons. Result figures are committed; documents are not.
+*.pdf
+*.docx
+*.doc
+*.pptx
+*.ppt
+!docs/figures/*
