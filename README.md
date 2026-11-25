@@ -69,3 +69,12 @@ dates correctly derived.
 ## Stack
 
 Python · PyMuPDF · MongoDB (PyMongo)
+
+---
+
+## Use
+
+© 2026 Mahesh Veeraiah R. All rights reserved.
+
+Published for review and assessment. Not licensed for reuse, redistribution or
+modification — please get in touch about any other use.
